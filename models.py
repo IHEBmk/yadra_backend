@@ -50,7 +50,7 @@ class Company(db.Model):
     phone = db.Column(db.String(132),unique=True,nullable=True)
     description = db.Column(db.String(132),unique=True,nullable=False)
     website = db.Column(db.String(132),unique=True,nullable=False)
-    business_registration = db.Column(db.String(132),unique=True,nullable=False)
+    business_registration = db.Column(db.String(132),unique=True,nullable=True)
     social_links = db.Column(db.String(132),unique=True,nullable=False)
     logo = db.Column(db.String(120),unique=True,nullable=False)
     category=db.Column(db.Integer,ForeignKey('category.id'))
@@ -62,21 +62,27 @@ class Company(db.Model):
 
 
 
-    def __init__(self, name,email,phone,description,website,business_registration,social_links,logo,category,address,created_at):
-
+    def __init__(
+        self, name, email, phone=None, description=None, website=None,
+        business_registration=None, social_links=None, logo=None,
+        category=None, address=None, created_at=None, visits=0,
+        verified=0, is_hidden=False
+    ):
+        self.id = str(uuid.uuid4())
         self.name = name
-        self.email=email
-        self.phone=phone
-        self.description=description
-        self.website=website
-        self.business_registration=business_registration
-        self.social_links=social_links
-        self.email=email
-        self.logo=logo
-        self.category=category
+        self.email = email
+        self.phone = phone
+        self.description = description
+        self.website = website
+        self.business_registration = business_registration
+        self.social_links = social_links
+        self.logo = logo
+        self.category = category
         self.address = address
-        self.created_at=created_at
-
+        self.created_at = created_at
+        self.visits = visits
+        self.verified = verified
+        self.is_hidden = is_hidden
     def to_dict(self):
         return {
             "id": self.id,

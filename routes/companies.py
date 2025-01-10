@@ -170,12 +170,12 @@ def company_register_validate():
         if User.query.filter_by(email=company.admin_email,is_hidden=False).first():
             return jsonify({"msg": "Admin email already exists"}), 400
         if validated:
-            company1=Company(name= company.name,email= company.email,phone= company.phone,website=company.website,description= company.description,social_links= company.social_links,business_registration= company.business_registration, logo=company.logo,avatar=company.avatar, category=company.category, address= company.address, created_at=datetime.now(),verified=0)
+            company1=Company(name= company.name,email= company.email,phone= company.phone,website=company.website,description= company.description,social_links= company.social_links,business_registration= company.business_registration,logo=company.logo, category=company.category, address= company.address, created_at=datetime.now(),verified=0)
             db.session.add(company1)
             db.session.commit()
             company2 = Company.query.filter_by(name = company.name).first()
             admin_password = generate_password()
-            db.session.add(User(email=company.admin_email, password=bcrypt.generate_password_hash(admin_password).decode('utf-8'), name = f"company.name admin", role = 3, company_id = company2.id,created_at=datetime.now(),last_login = datetime.now(),avatar=company.avatar,state=0) )
+            db.session.add(User(email=company.admin_email, password=bcrypt.generate_password_hash(admin_password).decode('utf-8'), name = f"company.name admin", role = 3, company_id = company2.id,created_at=datetime.now(),last_login = datetime.now(),avatar=company.logo,state=0) )
         company.is_hidden=True
         db.session.commit()
     
@@ -244,7 +244,7 @@ def add_branch():
         
         branch = Branch(
         name,company_id,email,email,address,phone)
-        db.session.add(User(email=account_email, password=bcrypt.generate_password_hash(admin_password).decode('utf-8'), name = f"company.name admin", role = 4,company_id=company.id, branch_id = branch.id,created_at=datetime.now(),avatar=company.avatar,last_login = datetime.now(),state=0) )
+        db.session.add(User(email=account_email, password=bcrypt.generate_password_hash(admin_password).decode('utf-8'), name = f"company.name admin", role = 4,company_id=company.id, branch_id = branch.id,created_at=datetime.now(),avatar=company.logo,last_login = datetime.now(),state=0) )
 
         db.session.add(branch)
         db.session.commit()
