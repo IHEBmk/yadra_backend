@@ -771,7 +771,18 @@ def get_companies_by_category():
 @companies_blueprint.route('/company/search_companies', methods=['GET'])
 # @jwt_required()
 def search_companies():
-    search_
+    search_name=request.args.get('search_name')
+    if not search_name:
+        return jsonify({'message':'no search name'}),400
+    search_name=search_name.strip()
+    companies=Company.query.filter(Company.name.like('%'+search_name+'%')).all()
+    company_list=[]
+    for company in companies:
+        if company.is_hidden:
+            continue
+        company_list.append(company.to_dict())
+
+    return jsonify({'companies':[company.to_dict() for company in companies]}),200
     
     
 

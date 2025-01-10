@@ -188,7 +188,13 @@ def like_review():
 
     existing_like = Likes.query.filter_by(review_id=review_id, user_id=user_id).first()
     if existing_like:
-        return jsonify({"message": "You have already liked this review."}), 400
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({
+            "message": "Like removed successfully",
+            "review_id": review_id,
+            "user_id": user_id
+        }), 200
 
     like = Likes(
         review_id=review_id,
