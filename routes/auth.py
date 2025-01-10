@@ -149,7 +149,7 @@ def login():
 
 
 @auth_blueprint.route('/send-otp_phone', methods=['POST'])
-def send_otp():
+def send_otp_phone():
     data = request.json
     phone = data.get('phone')
 
@@ -164,12 +164,12 @@ def send_otp():
         return jsonify({"error": str(e)}), 500
 
 @auth_blueprint.route('/send-otp_email', methods=['POST'])
-def send_otp():
+def send_otp_email():
     data = request.json
     email = data.get('email')
 
     if not email:
-        return jsonify({"error": "Phone number is required"}), 400
+        return jsonify({"error": "email  is required"}), 400
 
     try:
         # Send OTP using Supabase
@@ -178,6 +178,50 @@ def send_otp():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+
+
+@auth_blueprint.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.json
+    phone = data.get('phone')
+    otp = data.get('otp')
+
+    if not phone or not otp:
+        return jsonify({"error": "Phone number and OTP are required"}), 400
+
+    try:
+        # Verify OTP using Supabase
+        response = supabase.auth.verify_otp(phone=phone, token=otp)
+        user_id = response['user']['id']
+
+        # Check if the user exists in the MySQL database
+        mysql_user = User.query.filter_by(phone=phone).first()
+        if not mysql_user:
+            # Create a new user in MySQL if not exists
+            new_user = User(phone=phone, supabase_id=user_id)
+            db.session.add(new_user)
+            db.session.commit()
+
+        # Generate JWT or session for your app
+        token = create_access_token(identity=mysql_user.id if mysql_user else new_user.id)
+
+        return jsonify({"message": "OTP verified successfully", "token": token}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 @auth_blueprint.route('/Delete', methods=['POST'])
 @jwt_required()
 def Delete():
