@@ -385,9 +385,25 @@ def edit_company():
             
                     if file.filename == '':
                         return jsonify({"error": "No file selected"}), 400
+                    file_name = f"images/{file.filename}"
+                    try:
+                        response = supabase.storage.from_("company").get_public_url(file_name)
+                        db.session.commit()
+                        return jsonify({
+        "msg": 'company modified successfully',
+"company": {
+                            "id": company.id,
+                            "name": company.name,
+                            "email": company.email,
+                            "phone": company.phone,
+                            "logo": response
+                        }
+    }), 201 
+                    except:
+                        pass
                     image_data = file.read()
                     # Specify the file name you want to use in Supabase Storage
-                    file_name = f"images/{file.filename}"
+                    
                     # Upload the image to Supabase Storage
                     try:
                         response = supabase.storage.from_("company").upload(file_name, image_data)
@@ -398,8 +414,15 @@ def edit_company():
             "msg": str(e)}), 500
                 db.session.commit()
                 return jsonify({
-            "msg": 'company modified successfully',
-        }), 201
+                    "msg": 'company modified successfully',
+                    "company": {
+                        "id": company.id,
+                        "name": company.name,
+                        "email": company.email,
+                        "phone": company.phone,
+                        "logo": response
+                    }
+                }),
             else:
                 if not company:
                     return jsonify({

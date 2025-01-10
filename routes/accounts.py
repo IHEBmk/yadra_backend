@@ -249,11 +249,30 @@ def edit_account():
     
                 if file.filename == '':
                     return jsonify({"error": "No file selected"}), 400
-
+                file_name = f"images/{file.filename}"
+                #check if file already exists in storage
+                try:
+                    response = supabase.storage.from_("Users").get_public_url(file_name)
+                    db.session.commit()
+                    return jsonify({
+        "msg": 'user modified successfully',
+"user": {
+                "phone": user.phone,
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "company_id": user.company_id,
+                "branch_id": user.branch_id,
+                "avatar": user.avatar
+            }
+    }), 201 
+                except:
+                    pass
                 image_data = file.read()
 
                 # Specify the file name you want to use in Supabase Storage
-                file_name = f"images/{file.filename}"
+                
 
                 # Upload the image to Supabase Storage
                 try:
