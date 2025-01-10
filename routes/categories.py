@@ -51,3 +51,7 @@ def add_category():
         return  jsonify({
                     'msg':'User does not exist'
                 }),300    
+        
+        
+        
+        

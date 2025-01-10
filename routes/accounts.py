@@ -273,10 +273,6 @@ def edit_account():
                     pass
                 image_data = file.read()
 
-                # Specify the file name you want to use in Supabase Storage
-                
-
-                # Upload the image to Supabase Storage
                 try:
                     response = supabase.storage.from_("Users").upload(file_name, image_data)
 

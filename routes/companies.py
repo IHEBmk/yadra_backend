@@ -755,6 +755,19 @@ def delete_branch():
     
     
     
+@companies_blueprint.route('/company/get_companies_by_category', methods=['GET'])
+# @jwt_required()
+def get_companies_by_category():
+    # account_id=get_jwt_identity()
+
+        category_id = request.args.get('category_id')
+        companies=Company.query.filter_by(category_id=category_id,is_hidden=False).all()
+        companies=[company.to_dict() for company in companies]
+        return jsonify({'companies':companies}),200
+
+    
+    
+    
     
     
 
