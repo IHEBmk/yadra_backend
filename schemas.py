@@ -26,6 +26,7 @@ class ReviewSchema(Schema):
         required=True
     )
     company_id = fields.UUID(required=False,allow_none=True)
+    date_of_experience = fields.String(validate=validate.Length(min=1))
     content = fields.String(required=True, validate=validate.Length(min=10, max=1000))
     is_anonymous = fields.Boolean(missing=False)
     purchase_date = fields.Date(allow_none=True)

@@ -254,6 +254,7 @@ class Review(db.Model):
     tags = db.Column(db.String(120),nullable=False)
     is_anonymous = db.Column(db.Boolean, default = False)
     is_hidden = db.Column(db.Boolean, default=False)
+    date_of_experience = db.Column(db.String(120),nullable=False)
 
     def to_dict(self):
         return {

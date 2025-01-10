@@ -25,8 +25,7 @@ def submit_review():
         return jsonify({"msg": "Validation failed", "errors": err.messages}), 400
 
     
-
-    print(validated_data)
+    date_of_experience = validated_data["date_of_experience"]
     branch_id = validated_data["branch_id"]
     company_id = validated_data["company_id"]
     branch = models.Branch.query.filter_by(id=str(branch_id)).first()
