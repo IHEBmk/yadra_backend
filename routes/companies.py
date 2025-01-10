@@ -635,7 +635,8 @@ def get_company():
             'rating':rating,
             'number_of_reviews':number_of_reviews,
             'number_of_responses':number_of_responses,
-            'avg_response_time':avg_response_time
+            'avg_response_time':avg_response_time,
+            'social_links':company.social_links,
         }),200
 
     else:
