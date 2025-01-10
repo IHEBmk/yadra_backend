@@ -249,13 +249,14 @@ def edit_account():
                 if file.filename == '':
                     return jsonify({"error": "No file selected"}), 400
                 file_name = f"images/{file.filename}"
-                #check if file already exists in storage
+                temp=f"{file.filename}"
                 files = supabase.storage.from_("Users").list('images/')
-                if len(files) > 0:
+
+                file_exists = any(file['name'] == temp for file in files)
+                if file_exists:
                     public_url = supabase.storage.from_("Users").get_public_url(file_name)
                     user.avatar = public_url
                     db.session.commit()
-
                     return jsonify({
         "msg": 'user modified successfully',
 "user": {
