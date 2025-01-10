@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = 'users'
-
+    supabase_id=db.Column(db.String(130), default=lambda: str(uuid.uuid4()))
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
@@ -116,13 +116,15 @@ class Branch(db.Model):
 
 
 
-    def __init__(self, id,name,company_id,email,address,phone):
-        self.id = id
+    def __init__(self, company_id, name, email, phone, address, visits=0, is_hidden=False):
+        self.id = str(uuid.uuid4())
         self.company_id = company_id
         self.name = name
-        self.email=email
+        self.email = email
+        self.phone = phone
         self.address = address
-        self.phone=phone
+        self.visits = visits
+        self.is_hidden = is_hidden
 
     def to_dict(self):
         """Converts the model's attributes to a dictionary."""

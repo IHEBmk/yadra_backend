@@ -687,7 +687,7 @@ def get_company_branches():
     
     branches=get_branches(company)
     
-    return jsonify({'branches':branches}),200
+    return jsonify({'branches':branches[0]}),200
         
     
     
