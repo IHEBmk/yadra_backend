@@ -23,12 +23,12 @@ def register():
     if User.query.filter_by(email=data['email']).first():
         return jsonify({"error": {"code": "EMAIL_EXISTS", "message": "Email already registered", "details": {"field": "email"}}}), 400
 
-    response = supabase.auth.sign_up(email=data['email'], password=data['password'])
-    supabase_user_id = response['user']['id']
+    # response = supabase.auth.sign_up(email=data['email'], password=data['password'])
+    # supabase_user_id = response['user']['id']
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
     user = User(
-        supabase_id=supabase_user_id,
+        # supabase_id=supabase_user_id,
         email=data['email'],
         password=hashed_password,
         name=data['name'],
@@ -42,20 +42,9 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    token = create_access_token(identity=user.id, expires_delta=timedelta(days=7))
 
     return jsonify({
-                            "user": {
-                "phone": user.phone,
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "role": user.role,
-                "company_id": user.company_id,
-                "branch_id": user.branch_id,
-                "avatar": user.avatar
-            },
-        "token": token
+                       'msg':'user created successfully',
     }), 201
 
 @auth_blueprint.route('/register_user', methods=['POST'])
@@ -67,12 +56,12 @@ def register_user():
         return jsonify({"error": {"code": "INVALID_INPUT", "message": "Invalid input", "details": err.messages}}), 400
     if User.query.filter_by(email=data['email']).first():
         return jsonify({"error": {"code": "EMAIL_EXISTS", "message": "Email already registered", "details": {"field": "email"}}}), 400
-    response = supabase.auth.sign_up(email=data['email'], password=data['password'])
-    supabase_user_id = response['user']['id']
+    # response = supabase.auth.sign_up(email=data['email'], password=data['password'])
+    # supabase_user_id = response['user']['id']
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
     user = User(
-        supabase_id=supabase_user_id,
+        # supabase_id=supabase_user_id,
         email=data['email'],
         password=hashed_password,
         name=data['name'],
@@ -111,8 +100,8 @@ def login():
 
     if not email or not password:
         return jsonify({"msg": "Missing email or password"}), 400
-    response = supabase.auth.sign_in(email=email, password=password)
-    supabase_user_id = response['user']['id']
+    # response = supabase.auth.sign_in(email=email, password=password)
+    # supabase_user_id = response['user']['id']
     user = User.query.filter_by(email=email,supabase_id=supabase_user_id,is_hidden=False).first()
     db.session.commit()
     if user and bcrypt.check_password_hash(user.password, password):
@@ -182,7 +171,6 @@ def send_otp_email():
 
 
 
-@auth_blueprint.route('/verify-otp', methods=['POST'])
 def verify_otp():
     data = request.json
     phone = data.get('phone')
@@ -195,14 +183,18 @@ def verify_otp():
         # Verify OTP using Supabase
         response = supabase.auth.verify_otp(phone=phone, token=otp)
         user_id = response['user']['id']
+        user=User.query.filter_by(supabase_id=user_id).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        token=create_access_token(identity=user.id)
+        return jsonify({"message": "OTP verified successfully",
+                       'token': token,
+                       'user':user.to_dict()
+                           }), 200
+        
+    
 
-        # Check if the user exists in the MySQL database
-        mysql_user = User.query.filter_by(phone=phone).first()
-        if not mysql_user:
-            # Create a new user in MySQL if not exists
-            new_user = User(phone=phone, supabase_id=user_id)
-            db.session.add(new_user)
-            db.session.commit()
+
 
         # Generate JWT or session for your app
         token = create_access_token(identity=mysql_user.id if mysql_user else new_user.id)
