@@ -41,7 +41,16 @@ def register():
     token = create_access_token(identity=user.id, expires_delta=timedelta(days=7))
 
     return jsonify({
-        "user_id": user.id,
+                            "user": {
+                "phone": user.phone,
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "company_id": user.company_id,
+                "branch_id": user.branch_id,
+                "avatar": user.avatar
+            },
         "token": token
     }), 201
 

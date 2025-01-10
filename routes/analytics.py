@@ -118,7 +118,7 @@ def get_num_companies():
     if not user.role==1:
         return jsonify({"message": "Unauthorized User"}), 404
     
-    number_of_companies=len(Company.query.filter_by(is_hidden=False))
+    number_of_companies=len(Company.query.filter_by(is_hidden=False).all())
     return jsonify({"message": "succesfully calculated ",
                     "number of companies":number_of_companies}), 200
     
@@ -146,7 +146,7 @@ def get_num_of_active_users():
     if not user.role==1:
         return jsonify({"message": "Aunothorized User"}), 404
     
-    users=User.query.all()
+    users=User.query.filter_by(is_hidden=False).all()
     number_of_active_users=0
     today=datetime.now()
     print (today)
