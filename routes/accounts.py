@@ -234,7 +234,6 @@ def edit_account():
             if data.get('name'):
                 user.name= data.get('name')
             if data.get('password'):
-
                 current_password = data.get('current_password')
                 if bcrypt.check_password_hash(user.password, current_password):
                     user.password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
@@ -251,7 +250,8 @@ def edit_account():
                     return jsonify({"error": "No file selected"}), 400
                 file_name = f"images/{file.filename}"
                 #check if file already exists in storage
-                try:
+                files = supabase.storage.from_("Users").list(file_name)
+                if len(files) > 0:
                     public_url = supabase.storage.from_("Users").get_public_url(file_name)
                     user.avatar = public_url
                     db.session.commit()
@@ -268,13 +268,16 @@ def edit_account():
                 "branch_id": user.branch_id,
                 "avatar": user.avatar
             }
-    }), 201 
-                except:
-                    pass
-                image_data = file.read()
+    }), 200
 
+
+                image_data = file.read()
                 try:
                     response = supabase.storage.from_("Users").upload(file_name, image_data)
+
+                    print("ds"+str(response))
+                    if not response:
+                        return jsonify({"error": "Error uploading file"}), 500
 
                     public_url = supabase.storage.from_("Users").get_public_url(file_name)
                     user.avatar= public_url

@@ -386,8 +386,9 @@ def edit_company():
                     if file.filename == '':
                         return jsonify({"error": "No file selected"}), 400
                     file_name = f"images/{file.filename}"
-                    try:
-                        public_url = supabase.storage.from_("company").get_public_url(file_name)
+                    files = supabase.storage.from_("Users").list(file_name)
+                    if len(files) > 0:
+                        public_url = supabase.storage.from_("Users").get_public_url(file_name)
                         company.logo = public_url
                         db.session.commit()
                         
@@ -401,8 +402,6 @@ def edit_company():
                             "logo": response
                         }
     }), 201 
-                    except:
-                        pass
                     image_data = file.read()
                     # Specify the file name you want to use in Supabase Storage
                     
@@ -776,6 +775,32 @@ def search_companies():
     
     
 
+@companies_blueprint.route('/company/get_suggestions',methods=['POST'])
+def get_suggestions():
+    company_id = request.get_json().get('company_id')
+    suggestions = get_company_suggestions(company_id)
+    companies = Company.query.filter(Company.id.in_(suggestions)).all()
+    companies = [{'id':company.id,'name':company.name, 'logo':company.logo, 'rating':company.rating} for company in companies]
+    return jsonify({'companies':companies}),200
+
+
+def get_company_suggestions(company_id):
+    company_visits = Company_Users_visits.query.filter_by(company_id=company_id).all()
+    suggestions = {}
+    for visit in company_visits:
+        if visit.guest_id:
+            if visit.company_id not in suggestions:
+                suggestions[company_id] = 1
+            else :
+                suggestions[company_id] += 1
+        elif visit.user_id:
+            if visit.company_id not in suggestions:
+                suggestions[company_id] = 1
+            else :
+                suggestions[company_id] += 1
+    sorted_suggestions = sorted(suggestions.items(), key=lambda item: item[1], reverse=True)
+
+    return sorted_suggestions[:3]
     
     
     
