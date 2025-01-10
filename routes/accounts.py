@@ -264,7 +264,13 @@ def edit_account():
                 except Exception as e:
                     return jsonify({"error": str(e)}), 500
             db.session.commit()
-            return jsonify({
+            if 'image'  in request.files:
+                return jsonify({
+        "msg": 'user modified successfully',
+        'url':user.avatar
+    }), 201 
+            else:
+                return jsonify({
         "msg": 'user modified successfully',
     }), 201
 
