@@ -768,6 +768,10 @@ def get_companies_by_category():
     
     
     
+@companies_blueprint.route('/company/search_companies', methods=['GET'])
+# @jwt_required()
+def search_companies():
+    search_
     
     
 

@@ -17,10 +17,7 @@ reviews_blueprint = Blueprint('reviews', __name__)
 @jwt_required()
 def submit_review():
     user_id = get_jwt_identity()
-    files = request.files.getlist("media")
     json_data = request.get_json()  
-    logger.info(f"Received form data: {json_data}")
-    json_data["media"] = files 
     logger.info(f"Received form data: {json_data}")
     schema = ReviewSchema()
     try:
@@ -29,15 +26,14 @@ def submit_review():
         return jsonify({"msg": "Validation failed", "errors": err.messages}), 400
 
     
-    media_errors = validate_media_files(files)
-    if media_errors:
-        return jsonify({"msg": "Media validation failed", "errors": media_errors}), 400
 
-    
+    print(validated_data)
     branch_id = validated_data["branch_id"]
+    company_id = validated_data["company_id"]
     branch = Branch.query.filter_by(id=str(branch_id)).first()
-    if not branch:
-        return jsonify({"msg": "Branch not found"}), 404
+    company=Company.query.filter_by(id=str(company_id)).first()
+    if not branch and not company:
+        return jsonify({"msg": "Entity not found"}), 404
 
     
 
@@ -45,6 +41,7 @@ def submit_review():
     review = Review(
         id=str(uuid.uuid4()),
         user_id=user_id,
+        company_id=company_id,
         branch_id=branch_id, 
         description=validated_data["content"],
         rating=validated_data["rating"]["general_rating"],

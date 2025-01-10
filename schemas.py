@@ -19,12 +19,13 @@ class RegisterSchema(Schema):
 
 
 class ReviewSchema(Schema):
-    branch_id = fields.UUID(required=True)
+    branch_id = fields.UUID(required=False,allow_none=True)
     rating = fields.Dict(
         keys=fields.String(validate=validate.Length(min=1)),
         values=fields.Integer(validate=validate.Range(min=1, max=5)),
         required=True
     )
+    company_id = fields.UUID(required=False,allow_none=True)
     content = fields.String(required=True, validate=validate.Length(min=10, max=1000))
     is_anonymous = fields.Boolean(missing=False)
     purchase_date = fields.Date(allow_none=True)
