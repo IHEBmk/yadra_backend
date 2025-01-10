@@ -145,7 +145,7 @@ class Company_register(db.Model):
     id = db.Column(db.String(130), primary_key=True,default =lambda: str(uuid.uuid4()))
     name = db.Column(db.String(32),unique=True,nullable=False)
     email = db.Column(db.String(132),unique=True,nullable=False)
-    admin_email = db.Column(db.String(132),unique=True,nullable=False)
+    admin_email = db.Column(db.String(132),unique=False,nullable=False)
     phone = db.Column(db.String(132),unique=True,nullable=True)
     description = db.Column(db.String(132),unique=True,nullable=False)
     website = db.Column(db.String(132),unique=True,nullable=False)
@@ -357,4 +357,23 @@ class Company_Users_visits(db.Model):
             "company_id": self.company_id,
             "user_id": self.user_id,
             "guest_id": self.guest_id
+        }
+    
+class authToken(db.Model):
+    __tablename__ = 'authToken'
+    id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(130), ForeignKey('users.id', ondelete='CASCADE'))
+    token = db.Column(db.String(600), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    is_revoked = db.Column(db.Boolean, default=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "token": self.token,
+            "created_at": self.created_at,
+            "expires_at": self.expires_at,
+            "is_revoked": self.is_revoked
         }
