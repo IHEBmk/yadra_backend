@@ -146,7 +146,7 @@ class Company_register(db.Model):
     category=db.Column(db.Integer,ForeignKey('category.id'))
     address = db.Column(db.String(120),nullable=False)
     is_hidden = db.Column(db.Boolean, default=False)
-    
+    created_at = db.Column(db.String(120),nullable=False)
 
 
 
@@ -179,6 +179,7 @@ class Company_register(db.Model):
             "category": self.category,
             "address": self.address,
             "is_hidden": self.is_hidden,
+            "created_at": self.created_at
         }
 
 class Category(db.Model):

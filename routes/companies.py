@@ -114,7 +114,7 @@ def company_register():
         return jsonify({"msg": "Social Links already exists"}), 401
 
     company2 = Company_register(
-        name,email,admin_email,phone,description,business_registration,social_links,website,logo,category,address
+        name,email,admin_email,phone,description,business_registration,social_links,website,logo,category,address,created_at=datetime.now()
     )
     db.session.add(company2)
     db.session.commit()
@@ -894,7 +894,7 @@ def get_company_rating(company):
     rate=0
     count=0
     for review in reviews:
-        rate+=review.rate
+        rate+=review.rating
         count+=1
     if count>0:
         rate/=count

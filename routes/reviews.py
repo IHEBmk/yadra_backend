@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 import logging
 import models
+from routes.companies import get_company_rating
 from schemas import ReviewSchema, validate_media_files
 
 logging.basicConfig(level=logging.DEBUG)
@@ -282,6 +283,11 @@ def get_recent():
         reviews=Review.query.filter_by(is_hidden=False).order_by(Review.created_at.desc()).limit(3).all()
         
         reviews=[review.to_dict() for review in reviews]
+        for review in reviews:
+            company=Company.query.filter_by(id=review['company_id']).first()
+            review['company_rating']=get_company_rating(company)
+            review['company_name']=company.name
+            review['company_logo']=company.logo
         return jsonify({"reviews": reviews}), 200
     
     
@@ -292,6 +298,4 @@ def get_recent():
     
     
     
-    
-def get_company_rating(company_id) :
     
