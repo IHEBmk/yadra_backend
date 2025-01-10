@@ -14,7 +14,7 @@ categories_blueprint = Blueprint('categories', __name__)
 @categories_blueprint.route('/get_categories', methods=['GET'])
 def get_categories():
    categories = Category.query.all()
-   categories_list = [company.to_dict() for company in categories]
+   categories_list = [category.to_dict() for category in categories]
 
    return jsonify({
         "companies": categories_list,

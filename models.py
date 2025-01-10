@@ -24,7 +24,21 @@ class User(db.Model):
     state = db.Column(db.Integer,nullable=False,default=0)
     is_hidden = db.Column(db.Boolean, default=False)
     
-
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "name": self.name,
+            "phone": self.phone,
+            "role": self.role,
+            "company_id": self.company_id,
+            "branch_id": self.branch_id,
+            "created_at": self.created_at,
+            "avatar": self.avatar,
+            "last_login": self.last_login,
+            "state": self.state,
+            "is_hidden": self.is_hidden
+        }
 
 class Company(db.Model):
     __tablename__ = 'company'
@@ -63,6 +77,24 @@ class Company(db.Model):
         self.address = address
         self.created_at=created_at
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "description": self.description,
+            "website": self.website,
+            "business_registration": self.business_registration,
+            "social_links": self.social_links,
+            "logo": self.logo,
+            "category": self.category,
+            "address": self.address,
+            "created_at": self.created_at,
+            "visits": self.visits,
+            "verified": self.verified,
+            "is_hidden": self.is_hidden
+        }
 class Branch(db.Model):
     __tablename__ = 'branch'
 
@@ -86,6 +118,18 @@ class Branch(db.Model):
         self.address = address
         self.phone=phone
 
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "company_id": self.company_id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "address": self.address,
+            "visits": self.visits,
+            "is_hidden": self.is_hidden,
+        }
 class Company_register(db.Model):
     __tablename__ = 'company_register'
 
@@ -120,12 +164,21 @@ class Company_register(db.Model):
         self.address = address
 
     def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
         return {
             "id": self.id,
             "name": self.name,
+            "email": self.email,
+            "admin_email": self.admin_email,
+            "phone": self.phone,
+            "description": self.description,
+            "website": self.website,
+            "business_registration": self.business_registration,
+            "social_links": self.social_links,
             "logo": self.logo,
             "category": self.category,
-            "address": self.address
+            "address": self.address,
+            "is_hidden": self.is_hidden,
         }
 
 class Category(db.Model):
@@ -136,6 +189,12 @@ class Category(db.Model):
 
     def __init__(self, name):
         self.name = name
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
 class Role(db.Model):
     __tablename__ = "role"
@@ -146,6 +205,12 @@ class Role(db.Model):
     def __init__(self, name):
         self.name = name
         
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "name": self.name
+        }
         
         
         
@@ -230,7 +295,16 @@ class Response(db.Model):
     is_hidden = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.String(120),nullable=False)
     
-
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "review_id": self.review_id,
+            "description": self.description,
+            "user_id": self.user_id,
+            "is_hidden": self.is_hidden,
+            "created_at": self.created_at
+        }
 
 class Likes(db.Model):
     __tablename__ = 'likes'
@@ -238,10 +312,24 @@ class Likes(db.Model):
     review_id= db.Column(db.String(130),ForeignKey('review.id',ondelete='CASCADE'))
     user_id= db.Column(db.String(130),ForeignKey('users.id',ondelete='CASCADE'))
     
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "review_id": self.review_id,
+            "user_id": self.user_id
+        }
 class Guest(db.Model):
     __tablename__ = 'guest'
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
 
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id
+        }
+        
+        
 class Company_Users_visits(db.Model):
     __tablename__ = 'company_users'
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -250,3 +338,11 @@ class Company_Users_visits(db.Model):
     guest_id = db.Column(db.String(130),ForeignKey('guest.id',ondelete='CASCADE'))
 
     
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "company_id": self.company_id,
+            "user_id": self.user_id,
+            "guest_id": self.guest_id
+        }
