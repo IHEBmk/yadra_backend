@@ -648,13 +648,14 @@ def get_company():
 @companies_blueprint.route('/get_company_reviews', methods=['GET'])
 @jwt_required()
 def get_company_reviews():
+    user_id = get_jwt_identity()
     print("USERRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
     print(get_jwt_identity())
     company_id=request.args.get("company_id")
     company=Company.query.filter_by(id=company_id,is_hidden=False).first()
     if company:
-        return jsonify({'reviews':get_company_reviews(company,get_jwt_identity()),
-        }),200
+        return jsonify({'reviews':get_company_reviews(company,get_jwt_identity()),"user_id":user_id}),200
+        
     else:
         return jsonify({"msg":"no company found"}), 404
     

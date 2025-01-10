@@ -174,6 +174,7 @@ def validate_flagged_review():
 @jwt_required()
 def like_review():
     user_id = get_jwt_identity()
+    print(user_id)
     data = request.get_json()
     review_id = data.get('review_id')
 
