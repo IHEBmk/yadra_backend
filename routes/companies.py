@@ -591,7 +591,7 @@ def get_branch():
     
     
     
-    
+
     
     
     
@@ -600,7 +600,6 @@ def get_branch():
 @companies_blueprint.route('/get_company', methods=['GET'])
 @jwt_required()
 def get_company():
-    # account_id=request.args.get("account_id")
     account_id=get_jwt_identity()
     company_id=request.args.get("company_id")
     user=User.query.filter_by(id=account_id,is_hidden=False).first()
@@ -610,7 +609,7 @@ def get_company():
     guest_id = guest.id if guest else None
     if company:
         if user or guest:
-            if user.role==2 or (user.company_id!= company.id and user.role!=1) or guest:
+            if user.role==2 or (user.company_id!= company.id and user.role!=1) or guest or user.role==1:
                 company.visits+=1
                 if not check_combination_exists(company.id, user_id, guest_id):
                     visit = Company_Users_visits(company_id=company.id,user_id=user_id,guest_id=guest_id)
@@ -804,27 +803,41 @@ def get_suggestions():
     company_id = request.get_json().get('company_id')
     suggestions = get_company_suggestions(company_id)
     companies = Company.query.filter(Company.id.in_(suggestions)).all()
-    companies = [{'id':company.id,'name':company.name, 'logo':company.logo, 'rating':company.rating} for company in companies]
+    companies = [{'id':company.id,'name':company.name, 'logo':company.logo, 'rating':get_branches(company)[1],'reviews':len(get_company_reviews(company))} for company in companies]
     return jsonify({'companies':companies}),200
 
 
 def get_company_suggestions(company_id):
     company_visits = Company_Users_visits.query.filter_by(company_id=company_id).all()
     suggestions = {}
+    user_visitors = []
+    guest_visitors = []
     for visit in company_visits:
         if visit.guest_id:
-            if visit.company_id not in suggestions:
-                suggestions[company_id] = 1
-            else :
-                suggestions[company_id] += 1
+            guest_visitors.append(visit.guest_id)
         elif visit.user_id:
+            user_visitors.append(visit.user_id)
+    for visitor in user_visitors:
+        visitor_visits = Company_Users_visits.query.filter(Company_Users_visits.user_id == visitor, Company_Users_visits.company_id != company_id).all()
+
+        for visit in visitor_visits:
             if visit.company_id not in suggestions:
-                suggestions[company_id] = 1
+                suggestions[visit.company_id] = 1
             else :
-                suggestions[company_id] += 1
+                suggestions[visit.company_id] += 1
+    for visitor in guest_visitors:
+        visitor_visits = Company_Users_visits.query.filter(Company_Users_visits.guest_id == visitor, Company_Users_visits.company_id != company_id).all()
+
+        for visit in visitor_visits:
+            if visit.company_id not in suggestions :
+                suggestions[visit.company_id] = 1
+            else :
+                suggestions[visit.company_id] += 1
+
+
     sorted_suggestions = sorted(suggestions.items(), key=lambda item: item[1], reverse=True)
 
-    return sorted_suggestions[:3]
+    return [company_id for company_id, _ in sorted_suggestions[:3]]
     
     
     
