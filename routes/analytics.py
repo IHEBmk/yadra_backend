@@ -448,7 +448,7 @@ def review_trends():
             
             
 
-@analytics_blueprint.route('/charts/users_over_time', methods=['GET'])
+@analytics_blueprint.route('/charts/users_over_time', methods=['POST'])
 @jwt_required()
 def get_users_over_time():
     user_id = get_jwt_identity()
