@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = 'users'
-    supabase_id=db.Column(db.String(130), default=lambda: str(uuid.uuid4()))
+    # supabase_id=db.Column(db.String(130), default=lambda: str(uuid.uuid4()))
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
