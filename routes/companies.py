@@ -130,7 +130,7 @@ def get_company_register():
     account_id=get_jwt_identity()
     user=User.query.filter_by(id=account_id,role=1,is_hidden=False).first()
     if user:
-        companies = Company_register.query.all()
+        companies = Company_register.query.filter_by(is_hidden=False).all()
     
         companies_list = [company.to_dict() for company in companies]
 

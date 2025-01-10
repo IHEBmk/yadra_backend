@@ -67,10 +67,12 @@ def register_user():
         return jsonify({"error": {"code": "INVALID_INPUT", "message": "Invalid input", "details": err.messages}}), 400
     if User.query.filter_by(email=data['email']).first():
         return jsonify({"error": {"code": "EMAIL_EXISTS", "message": "Email already registered", "details": {"field": "email"}}}), 400
-
+    response = supabase.auth.sign_up(email=data['email'], password=data['password'])
+    supabase_user_id = response['user']['id']
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
     user = User(
+        supabase_id=supabase_user_id,
         email=data['email'],
         password=hashed_password,
         name=data['name'],
