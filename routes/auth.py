@@ -75,7 +75,16 @@ def register_user():
 
     return jsonify({
         "user_id": user.id,
-        "token": token
+        "token": token,
+                    "user": {
+                "phone": user.phone,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "company_id": user.company_id,
+                "branch_id": user.branch_id,
+                "avatar": user.avatar
+            }
     }), 201
 
 @auth_blueprint.route('/login', methods=['POST'])
@@ -108,7 +117,8 @@ def login():
                 "email": user.email,
                 "role": user.role,
                 "company_id": user.company_id,
-                "branch_id": user.branch_id
+                "branch_id": user.branch_id,
+                "avatar": user.avatar
             }
         }), 200
         else:
