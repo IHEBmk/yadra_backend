@@ -1,14 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
-from models import Branch, Company, Flagged, Guest, User, db, Review, Likes
 from datetime import datetime
 import uuid
 import logging
+from models import db,Review, User, Branch, Company, Flagged, Guest, Likes
 import models
-from routes.companies import get_company_rating
-from schemas import ReviewSchema, validate_media_files
-
+from schemas import ReviewSchema
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -31,15 +29,15 @@ def submit_review():
     print(validated_data)
     branch_id = validated_data["branch_id"]
     company_id = validated_data["company_id"]
-    branch = Branch.query.filter_by(id=str(branch_id)).first()
-    company=Company.query.filter_by(id=str(company_id)).first()
+    branch = models.Branch.query.filter_by(id=str(branch_id)).first()
+    company=models.Company.query.filter_by(id=str(company_id)).first()
     if not branch and not company:
         return jsonify({"msg": "Entity not found"}), 404
 
     
 
     
-    review = Review(
+    review = models.Review(
         id=str(uuid.uuid4()),
         user_id=user_id,
         company_id=company_id,
@@ -291,6 +289,19 @@ def get_recent():
         return jsonify({"reviews": reviews}), 200
     
     
+    
+    
+    
+def get_company_rating(company):
+    reviews=Review.query.filter_by(company_id=company.id, is_hidden = False).all()
+    rate=0
+    count=0
+    for review in reviews:
+        rate+=review.rating
+        count+=1
+    if count>0:
+        rate/=count
+    return rate
     
     
     

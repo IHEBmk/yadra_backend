@@ -250,7 +250,7 @@ def edit_account():
                     return jsonify({"error": "No file selected"}), 400
                 file_name = f"images/{file.filename}"
                 #check if file already exists in storage
-                files = supabase.storage.from_("Users").list(file_name)
+                files = supabase.storage.from_("Users").list('images/')
                 if len(files) > 0:
                     public_url = supabase.storage.from_("Users").get_public_url(file_name)
                     user.avatar = public_url
@@ -274,8 +274,6 @@ def edit_account():
                 image_data = file.read()
                 try:
                     response = supabase.storage.from_("Users").upload(file_name, image_data)
-
-                    print("ds"+str(response))
                     if not response:
                         return jsonify({"error": "Error uploading file"}), 500
 

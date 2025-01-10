@@ -386,7 +386,7 @@ def edit_company():
                     if file.filename == '':
                         return jsonify({"error": "No file selected"}), 400
                     file_name = f"images/{file.filename}"
-                    files = supabase.storage.from_("Users").list(file_name)
+                    files = supabase.storage.from_("Users").list('images/')
                     if len(files) > 0:
                         public_url = supabase.storage.from_("Users").get_public_url(file_name)
                         company.logo = public_url
