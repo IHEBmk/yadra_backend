@@ -365,7 +365,7 @@ def edit_company():
         company=Company.query.filter_by(id=company_id,is_hidden=False).first()
         user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
         if user:
-            if (user.role==3 or user.role==1) and company and company.id==user.company_id:
+            if ((user.role==3 and company.id==user.company_id) or user.role==1) and company :
                 if data.get('name'):
                     company.name= data.get('name')
                 if data.get('description'):
@@ -402,7 +402,7 @@ def edit_company():
                             "name": company.name,
                             "email": company.email,
                             "phone": company.phone,
-                            "logo": response
+                            "logo": public_url,
                         }
     }), 201 
                     image_data = file.read()
@@ -425,7 +425,7 @@ def edit_company():
                         "name": company.name,
                         "email": company.email,
                         "phone": company.phone,
-                        "logo": response
+                        "logo": public_url
                     }
                 }),
             else:

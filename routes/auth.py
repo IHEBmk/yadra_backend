@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
+from config import supabase
 from schemas import RegisterSchema
 from models import  User, db
 from flask_bcrypt import Bcrypt
@@ -22,9 +23,12 @@ def register():
     if User.query.filter_by(email=data['email']).first():
         return jsonify({"error": {"code": "EMAIL_EXISTS", "message": "Email already registered", "details": {"field": "email"}}}), 400
 
+    response = supabase.auth.sign_up(email=data['email'], password=data['password'])
+    supabase_user_id = response['user']['id']
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
     user = User(
+        supabase_id=supabase_user_id,
         email=data['email'],
         password=hashed_password,
         name=data['name'],
@@ -105,8 +109,9 @@ def login():
 
     if not email or not password:
         return jsonify({"msg": "Missing email or password"}), 400
-
-    user = User.query.filter_by(email=email).first()
+    response = supabase.auth.sign_in(email=email, password=password)
+    supabase_user_id = response['user']['id']
+    user = User.query.filter_by(email=email,supabase_id=supabase_user_id,is_hidden=False).first()
     db.session.commit()
     if user and bcrypt.check_password_hash(user.password, password):
         if user.state==0 and user.is_hidden==False:
