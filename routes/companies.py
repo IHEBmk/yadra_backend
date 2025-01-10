@@ -612,7 +612,7 @@ def get_company():
     guest_id = guest.id if guest else None
     if company:
         if user or guest:
-            if user.role==2 or (user.company_id!= company.id and user.role!=1) or guest or user.role==1:
+            if user.role==2 or (user.company_id!= company.id and user.role!=1) or guest :
                 company.visits+=1
                 if not check_combination_exists(company.id, user_id, guest_id):
                     visit = Company_Users_visits(company_id=company.id,user_id=user_id,guest_id=guest_id)
