@@ -364,7 +364,7 @@ class authToken(db.Model):
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(130), ForeignKey('users.id', ondelete='CASCADE'))
     token = db.Column(db.String(600), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now())
     expires_at = db.Column(db.DateTime, nullable=False)
     is_revoked = db.Column(db.Boolean, default=False)
 

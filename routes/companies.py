@@ -802,11 +802,12 @@ def search_companies():
     
 
 @companies_blueprint.route('/company/get_suggestions',methods=['POST'])
+@jwt_required()
 def get_suggestions():
     company_id = request.get_json().get('company_id')
     suggestions = get_company_suggestions(company_id)
     companies = Company.query.filter(Company.id.in_(suggestions)).all()
-    companies = [{'id':company.id,'name':company.name, 'logo':company.logo, 'rating':get_branches(company)[1],'reviews':len(get_company_reviews(company))} for company in companies]
+    companies = [{'id':company.id,'name':company.name, 'logo':company.logo, 'rating':get_branches(company)[1],'reviews':len(get_company_reviews(company, get_jwt_identity()))} for company in companies]
     return jsonify({'companies':companies}),200
 
 
