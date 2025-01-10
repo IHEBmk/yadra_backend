@@ -234,9 +234,8 @@ def edit_account():
             if data.get('name'):
                 user.name= data.get('name')
             if data.get('password'):
-                user.password= bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
-                if data.get('password'):
-                    current_password = data.get('current_password')
+
+                current_password = data.get('current_password')
                 if bcrypt.check_password_hash(user.password, current_password):
                     user.password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
                 else:
