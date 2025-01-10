@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 
@@ -154,7 +155,7 @@ class Company_register(db.Model):
     category=db.Column(db.Integer,ForeignKey('category.id'))
     address = db.Column(db.String(120),nullable=False)
     is_hidden = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.String(120),nullable=False)
+    created_at = db.Column(db.String(120),nullable=False, default=datetime.now())
 
 
 
