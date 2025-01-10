@@ -247,7 +247,7 @@ def get_num_branches():
     if not user.role==1:
         return jsonify({"message": "Aunothorized User"}), 404
     
-    num_branches=len(Branch.query.all())
+    num_branches=len(Branch.query.filter_by(is_hidden=False).all())
     return jsonify({"message": "succesfully calculated ",
                     "number of branches":num_branches}), 200    
     
