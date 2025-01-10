@@ -40,7 +40,26 @@ def categories_distribution():
     
     
     
-    
+@analytics_blueprint.route('/charts/get_companies_distribution', methods=['GET'])
+@jwt_required()
+def companies_distribution():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    if not user.role==1:
+        return jsonify({"message": "Aunothorized User"}), 404
+    distribution=[{'accepted':0,'pending':0,'rejected':0}]
+    total_number=len(Company_register.query.all())
+    companies=len(Company.query.filter_by(is_hidden=False).all())
+    pending=len(Company_register.query.filter_by(is_hidden=False).all())
+    rejected_companies=len(Company_register.query.filter_by(is_hidden=True).all())-companies
+    return jsonify({"message": "succesfully calculated ",
+                    "accepted":companies,
+                    "pending":pending,
+                    "rejected":rejected_companies}), 200
     
     
     
@@ -322,7 +341,7 @@ def num_flagged():
     
     
     
-    
+
     
     
     
