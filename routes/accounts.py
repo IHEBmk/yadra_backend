@@ -352,3 +352,18 @@ def register():
         "user_id": guest.id,
         "token": token,
     }), 201
+    
+    
+@user_blueprint.route('/user_name_avatar', methods=['GET'])
+@jwt_required()
+def get_user_profile():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id,is_hidden=False,state=0).first()
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    return jsonify({
+        "name": user.name,
+        "avatar": user.avatar
+    }), 200

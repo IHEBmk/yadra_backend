@@ -147,6 +147,37 @@ def login():
 
 
 
+
+@auth_blueprint.route('/send-otp_phone', methods=['POST'])
+def send_otp():
+    data = request.json
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({"error": "Phone number is required"}), 400
+
+    try:
+        # Send OTP using Supabase
+        response = supabase.auth.sign_in_with_otp(phone=phone)
+        return jsonify({"message": "OTP sent successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@auth_blueprint.route('/send-otp_email', methods=['POST'])
+def send_otp():
+    data = request.json
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"error": "Phone number is required"}), 400
+
+    try:
+        # Send OTP using Supabase
+        response = supabase.auth.sign_in_with_otp(email=email)
+        return jsonify({"message": "OTP sent successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @auth_blueprint.route('/Delete', methods=['POST'])
 @jwt_required()
 def Delete():
