@@ -254,6 +254,7 @@ def edit_account():
                 try:
                     response = supabase.storage.from_("Users").get_public_url(file_name)
                     db.session.commit()
+                    user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
                     return jsonify({
         "msg": 'user modified successfully',
 "user": {
@@ -283,7 +284,7 @@ def edit_account():
                 except Exception as e:
                     return jsonify({"error": str(e)}), 500
             db.session.commit()
-            
+            user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
             return jsonify({
         "msg": 'user modified successfully',
 "user": {

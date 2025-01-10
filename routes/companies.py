@@ -389,6 +389,7 @@ def edit_company():
                     try:
                         response = supabase.storage.from_("company").get_public_url(file_name)
                         db.session.commit()
+                        company=Company.query.filter_by(id=company_id,is_hidden=False).first()
                         return jsonify({
         "msg": 'company modified successfully',
 "company": {
@@ -413,6 +414,7 @@ def edit_company():
                         return jsonify({
             "msg": str(e)}), 500
                 db.session.commit()
+                company=Company.query.filter_by(id=company_id,is_hidden=False).first()
                 return jsonify({
                     "msg": 'company modified successfully',
                     "company": {
