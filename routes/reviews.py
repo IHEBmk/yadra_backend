@@ -186,6 +186,7 @@ def like_review():
 
     existing_like = Likes.query.filter_by(review_id=review_id, user_id=user_id).first()
     if existing_like:
+        print("existing like")
         db.session.delete(existing_like)
         db.session.commit()
         return jsonify({
@@ -199,6 +200,7 @@ def like_review():
         user_id=user_id
     )
     db.session.add(like)
+    print("liked")
     db.session.commit()
 
     return jsonify({

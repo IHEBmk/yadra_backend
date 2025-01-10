@@ -648,6 +648,8 @@ def get_company():
 @companies_blueprint.route('/get_company_reviews', methods=['GET'])
 @jwt_required()
 def get_company_reviews():
+    print("USERRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+    print(get_jwt_identity())
     company_id=request.args.get("company_id")
     company=Company.query.filter_by(id=company_id,is_hidden=False).first()
     if company:
@@ -959,6 +961,9 @@ def get_review_user_information(review):
 def get_review_likes(review, user_id):
     likes_count = Likes.query.filter_by(review_id=review["id"]).count()
     user_liked = Likes.query.filter_by(review_id=review["id"], user_id=user_id).first()
+    print(review["id"])
+    print(user_id)
+    print(user_liked)
     return likes_count, True if user_liked else False
 
 def get_review_responses(review):
