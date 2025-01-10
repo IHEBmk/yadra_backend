@@ -651,7 +651,7 @@ def get_company_reviews():
     company_id=request.args.get("company_id")
     company=Company.query.filter_by(id=company_id,is_hidden=False).first()
     if company:
-        return jsonify({'reviews':get_company_reviews(company),
+        return jsonify({'reviews':get_company_reviews(company,get_jwt_identity()),
         }),200
     else:
         return jsonify({"msg":"no company found"}), 404
@@ -935,12 +935,12 @@ def get_branch_reviews(branch):
     return reviews_list
 
 
-def get_company_reviews(company):
+def get_company_reviews(company, user_id):
     reviews=Review.query.filter_by(company_id=company.id, is_hidden = False).all()
     reviews_list=[review.to_dict() for review in reviews]
     for review in reviews_list:
         review['responses']=get_review_responses(review)
-        review["likes"], review["user_liked"] = get_review_likes(review) 
+        review["likes"], review["user_liked"] = get_review_likes(review, user_id) 
         review["user_name"], review["user_avatar"] = get_review_user_information(review)
         review['status']=[]
         if review["is_anonymous"]:
@@ -955,9 +955,9 @@ def get_review_user_information(review):
     return user.name, user.avatar
 
 
-def get_review_likes(review):
+def get_review_likes(review, user_id):
     likes_count = Likes.query.filter_by(review_id=review["id"]).count()
-    user_liked = Likes.query.filter_by(review_id=review["id"], user_id=get_jwt_identity()).first()
+    user_liked = Likes.query.filter_by(review_id=review["id"], user_id=user_id).first()
     return likes_count, True if user_liked else False
 
 def get_review_responses(review):

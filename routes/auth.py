@@ -2,15 +2,37 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from config import supabase
 from schemas import RegisterSchema
-from models import  User, db
+from models import  User, authToken, db
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from marshmallow.exceptions import ValidationError
+from functools import wraps
 
 
 
 auth_blueprint = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
+
+def validate_token():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            token = request.headers.get('Authorization')
+            if not token:
+                return jsonify({"msg": "Missing token"}), 401
+                
+            token = token.split()[1]
+            stored_token = authToken.query.filter_by(
+                token=token,
+                is_revoked=False
+            ).first()
+            
+            if not stored_token or stored_token.expires_at < datetime.utcnow():
+                return jsonify({"msg": "Invalid or expired token"}), 401
+                
+            return fn(*args, **kwargs)
+        return decorator
+    return wrapper
 
 @auth_blueprint.route('/register', methods=['POST'])
 def register():
@@ -91,45 +113,81 @@ def register_user():
             }
     }), 201
 
+def store_token(user_id, token, expires_delta):
+    expires_at = datetime.now() + expires_delta
+    new_token = authToken(
+        user_id=user_id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.session.add(new_token)
+    db.session.commit()
+
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
-    remember_me = data.get('remember_me', False)
 
     if not email or not password:
         return jsonify({"msg": "Missing email or password"}), 400
-    # response = supabase.auth.sign_in(email=email, password=password)
-    # supabase_user_id = response['user']['id']
-    user = User.query.filter_by(email=email,supabase_id=supabase_user_id,is_hidden=False).first()
+
+    user = User.query.filter_by(email=email).first()
     db.session.commit()
+    
     if user and bcrypt.check_password_hash(user.password, password):
-        if user.state==0 and user.is_hidden==False:
-            
+        if user.state == 0 and user.is_hidden == False:
+            expires_delta = timedelta(days=7)
             access_token = create_access_token(
                 identity=user.id,
-                expires_delta=timedelta(days=7)  
+                expires_delta=expires_delta
             )
-            user.last_login=datetime.now()
+            
+            store_token(user.id, access_token, expires_delta)
+            
+            user.last_login = datetime.now()
+            db.session.commit()
 
             return jsonify({
-            "token": access_token,
-            "user": {
-                "phone": user.phone,
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "role": user.role,
-                "company_id": user.company_id,
-                "branch_id": user.branch_id,
-                "avatar": user.avatar
-            }
-        }), 200
+                "token": access_token,
+                "user": {
+                    "phone": user.phone,
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "role": user.role,
+                    "company_id": user.company_id,
+                    "branch_id": user.branch_id,
+                    "avatar": user.avatar
+                }
+            }), 200
         else:
             return jsonify({"msg": "user is banned"}), 401
 
     return jsonify({"msg": "Invalid email or password"}), 401
+
+
+
+@auth_blueprint.route('/logout', methods=['POST'])
+
+@jwt_required()
+@validate_token()
+def logout():
+    current_user_id = get_jwt_identity()
+    token = request.headers.get('Authorization').split()[1]
+    
+    stored_token = authToken.query.filter_by(
+        user_id=current_user_id,
+        token=token,
+        is_revoked=False
+    ).first()
+    
+    if stored_token:
+        stored_token.is_revoked = True
+        db.session.commit()
+        return jsonify({"msg": "Successfully logged out"}), 200
+    
+    return jsonify({"msg": "Token not found"}), 404
 
 
 
