@@ -252,9 +252,10 @@ def edit_account():
                 file_name = f"images/{file.filename}"
                 #check if file already exists in storage
                 try:
-                    response = supabase.storage.from_("Users").get_public_url(file_name)
+                    public_url = supabase.storage.from_("Users").get_public_url(file_name)
+                    user.avatar = public_url
                     db.session.commit()
-                    user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
+
                     return jsonify({
         "msg": 'user modified successfully',
 "user": {
@@ -284,7 +285,7 @@ def edit_account():
                 except Exception as e:
                     return jsonify({"error": str(e)}), 500
             db.session.commit()
-            user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
+            
             return jsonify({
         "msg": 'user modified successfully',
 "user": {
