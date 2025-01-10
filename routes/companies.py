@@ -387,9 +387,10 @@ def edit_company():
                         return jsonify({"error": "No file selected"}), 400
                     file_name = f"images/{file.filename}"
                     try:
-                        response = supabase.storage.from_("company").get_public_url(file_name)
+                        public_url = supabase.storage.from_("company").get_public_url(file_name)
+                        company.logo = public_url
                         db.session.commit()
-                        company=Company.query.filter_by(id=company_id,is_hidden=False).first()
+                        
                         return jsonify({
         "msg": 'company modified successfully',
 "company": {
