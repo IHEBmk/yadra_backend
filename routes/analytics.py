@@ -37,7 +37,28 @@ def categories_distribution():
     
     
     
-    
+@analytics_blueprint.route('/blocks/get_num_of_inactive_branches', methods=['GET'])
+@jwt_required()
+def get_num_of_inactive_branches():
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    if not user.role==1:
+        return jsonify({"message": "Unauthorized User"}), 404
+    branches = Branch.query.filter_by(is_hidden=False).all()
+    branch_ids = [branch.id for branch in branches]
+    inactive_branches = 0
+    for branch_id in branch_ids:
+        admins = User.query.filter_by(role=3, branch_id=branch_id).all()
+        for admin in admins:
+            last_login = datetime.strptime(admin.last_login, '%Y-%m-%d %H:%M:%S') 
+            one_month_ago = datetime.now() - timedelta(days=30)
+            if last_login < one_month_ago:
+                continue
+        inactive_branches += 1
+    return jsonify({"message": "succesfully calculated ",
+                    "number of inactive branches": inactive_branches}), 200
     
     
 @analytics_blueprint.route('/charts/get_companies_distribution', methods=['GET'])

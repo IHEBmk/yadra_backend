@@ -280,5 +280,18 @@ def get_recent():
         return jsonify({"reviews": reviews}), 200
     else:
         reviews=Review.query.filter_by(is_hidden=False).order_by(Review.created_at.desc()).limit(3).all()
+        
         reviews=[review.to_dict() for review in reviews]
         return jsonify({"reviews": reviews}), 200
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+def get_company_rating(company_id) :
+    

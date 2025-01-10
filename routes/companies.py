@@ -616,7 +616,8 @@ def get_company():
                     visit = Company_Users_visits(company_id=company.id,user_id=user_id,guest_id=guest_id)
                     db.session.add(visit)
                 db.session.commit()
-        branches,rating=get_branches(company)
+
+        rating=get_company_rating(company)
         number_of_reviews,number_of_responses=get_company_response_ratio(company)
         avg_response_time=avg_company_response_time(company)
         return jsonify({
@@ -630,7 +631,6 @@ def get_company():
             'website':company.website,
             'category':company.category,
             'verified':company.verified,
-            'branches':branches,
             'rating':rating,
             'number_of_reviews':number_of_reviews,
             'number_of_responses':number_of_responses,
@@ -673,6 +673,19 @@ def get_companies():
         return jsonify({
             'companies':companies_list,        
         }),201
+        
+        
+        
+@companies_blueprint.route('/get_company_branches', methods=['GET'])
+def get_company_branches():
+    company_id=request.args.get("company_id")
+    company=Company.query.filter_by(id=company_id,is_hidden=False).first()
+    if not company:
+        return jsonify({'message':'company not found'}),404
+    
+    branches=get_branches(company)
+    
+    return jsonify({'branches':branches}),200
         
     
     
@@ -876,7 +889,16 @@ def get_branches(company):
         rate/=count
     return branches_list,rate
 
-    
+def get_company_rating(company):
+    reviews=Review.query.filter_by(company_id=company.id, is_hidden = False).all()
+    rate=0
+    count=0
+    for review in reviews:
+        rate+=review.rate
+        count+=1
+    if count>0:
+        rate/=count
+    return rate
     
     
     
