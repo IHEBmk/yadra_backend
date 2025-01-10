@@ -901,7 +901,7 @@ def get_branch_rating(branch):
 
 
 def get_company_response_ratio(company):
-        reviews =Review.query.filter_by(company_id=company.id).all()
+        reviews =Review.query.filter_by(company_id=company.id,is_hidden=False).all()
         number_of_reviews=len(reviews)
         number_of_responses=0
         for review in reviews:
