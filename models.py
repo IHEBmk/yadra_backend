@@ -159,7 +159,7 @@ class Company_register(db.Model):
 
 
 
-    def __init__(self, name,email,admin_email,phone,description,business_registration,social_links,website,logo,category,address):
+    def __init__(self, name,email,admin_email,phone,description,business_registration,social_links,website,logo,category,address,created_at):
         self.name = name
         self.admin_email=admin_email
         self.email=email
@@ -171,6 +171,7 @@ class Company_register(db.Model):
         self.logo=logo
         self.category=category
         self.address = address
+        self.created_at = created_at
 
     def to_dict(self):
         """Converts the model's attributes to a dictionary."""
