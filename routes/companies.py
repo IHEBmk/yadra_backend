@@ -565,28 +565,7 @@ def get_branch():
         
         number_of_reviews,number_of_responses=get_branch_response_ratio(branch)
         avg_response_time=avg_branch_response_time(branch)
-        print({
-            'name':branch.name,
-            'email':branch.email,
-            'phone':branch.phone,
-            'address':branch.address,
-            'visits':branch.visits,
-            'logo':logo,
-            'website':website,
-            'category':category,
-            'verified':verified,
-            'rating':ratings[0],
-            'product_quality':ratings[1],
-            'price':ratings[2],
-            'delivery_speed':ratings[3],
-            'ease_of_use':ratings[4],
-            'customer_service':ratings[5],
-            'repartition':ratings[6],
-            'number_of_reviews':number_of_reviews,
-            'number_of_responses':number_of_responses,
-            'avg_response_time':avg_response_time,
-            
-        })
+
         return jsonify({
             'name':branch.name,
             'email':branch.email,
