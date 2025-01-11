@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from enum import Flag
 from flask import Blueprint, request, jsonify
+from routes.companies import get_branches
 from schemas import RegisterSchema
 from sqlalchemy import extract, func
 from models import Branch, Category, Company, Company_register, Flagged, Response, Review, User, Visit, db
@@ -545,8 +546,8 @@ def get_users_over_time():
     return jsonify(data), 200
 
 
-@analytics_blueprint.route('/charts/reviews_over_time', methods=['GET'], endpoint='reviews_over_time')
-@jwt_required
+@analytics_blueprint.route('/charts/reviews_over_time', methods=['POST'], endpoint='reviews_over_time')
+@jwt_required()
 def get_review_count():
     user_id = get_jwt_identity()
     if User.query.filter_by(id=user_id).first().role != 1:
@@ -599,6 +600,20 @@ def get_review_count():
     ]
 
     return jsonify(response), 200
+
+@analytics_blueprint.route('/charts/nb_reviews_per_company', methods=['GET'])
+@jwt_required()
+def nb_reviews_per_company():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+    companies = Company.query.filter_by(is_hidden=False).all()
+    nb_reviews_per_company = {}
+    for company in companies:
+        nb_reviews_per_company[company.id] = db.session.query(func.count(Review.id)).filter(Review.company_id == company.id).scalar() + get_branches(company)[1]
+    sorted_reviews = sorted(nb_reviews_per_company.items(), key=lambda item: item[1], reverse=True)
+
+    return jsonify([{"company" :company_id, "number_of_reviews": nb_reviews_per_company[company_id]} for company_id, _ in sorted_reviews[:5]]),200
 
 
 
@@ -852,3 +867,74 @@ def get_companies_over_time():
     ]
 
     return jsonify(data), 200
+
+@analytics_blueprint.route('/charts/visits_heatmap', methods=['GET'])
+@jwt_required()
+def get_visits_heatmap():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=7)
+
+    results = db.session.query(
+        Visit.interval_start.label('interval_start'),
+        Visit.interval_end.label('interval_end'),
+        func.sum(Visit.visit_count).label('total_visits')
+    ).filter(
+        Visit.interval_start >= start_date,
+        Visit.interval_end <= end_date
+    ).group_by(Visit.interval_start, Visit.interval_end).order_by(Visit.interval_start).all()
+
+    data = [
+        {
+            "interval_start": row.interval_start.strftime('%Y-%m-%d %H:%M:%S'),
+            "interval_end": row.interval_end.strftime('%Y-%m-%d %H:%M:%S'),
+            "total_visits": row.total_visits
+        }
+        for row in results
+    ]
+
+    return jsonify(data), 200
+
+@analytics_blueprint.route('/get_reviews', methods=['POST'])
+@jwt_required()
+def get_reviews():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+    data = request.get_json()
+    company_id = data.get('company_id')
+    company_branches = Branch.query.filter_by(company_id=company_id).all()
+    reviews = Review.query.filter_by(company_id=company_id).all()
+    for branch in company_branches:
+        reviews.extend(Review.query.filter_by(branch_id=branch.id).all())
+    reviews_list = [review.to_dict() for review in reviews]
+    return jsonify({"reviews": reviews_list}), 200
+
+@analytics_blueprint.route('/get_users', methods=['GET'])
+@jwt_required()
+def get_users():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+    users = User.query.filter_by(is_hidden=False).all()
+    users_list = [user.to_dict() for user in users]
+    data = [
+        {
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"],
+            "last_login": user["last_login"],
+            "state": user["state"],
+            "nb_reviews": get_nb_users_reviews(user["id"])
+        }
+        for user in users_list
+    ]
+
+    return jsonify(data), 200
+
+def get_nb_users_reviews(user_id):
+    reviews = Review.query.filter_by(user_id=user_id).all()
+    return len(reviews)

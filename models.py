@@ -384,6 +384,7 @@ class OTP(db.Model):
     tablename = 'otp'
     id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
     otp= db.Column(db.String(120))
+    email=db.Column(db.String(120))
     def to_dict(self):
         """Converts the model's attributes to a dictionary."""
         return {
