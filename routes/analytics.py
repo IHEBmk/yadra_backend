@@ -917,6 +917,7 @@ def get_reviews():
     reviews_list = [review.to_dict() for review in reviews]
     for review in reviews_list:
         review["user_name"], review["user_avatar"] = get_review_user_information(review)
+        review["is_flagged"] = Flagged.query.filter_by(review_id=review["id"]).first() is not None
         review['status']=[]
         if review["is_anonymous"]:
             review['user_name']='Anonymous'
