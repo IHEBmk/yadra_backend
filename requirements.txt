@@ -1,8 +1,9 @@
-alembic==1.14.0
-Flask==2.2.2
+Flask>=2.0.0,<3.0
+Werkzeug>=2.0.0,<3.0
 Flask_Bcrypt==1.0.1
 Flask_JWT_Extended==4.7.1
 flask_mail==0.10.0
+alembic==1.14.0
 Flask_Migrate==4.0.7
 flask_sqlalchemy==3.1.1
 marshmallow==3.25.0
@@ -13,5 +14,4 @@ SQLAlchemy==2.0.36
 supabase==2.11.0
 urllib3==1.26.16
 waitress==3.0.2
-Werkzeug==2.0.3
 
