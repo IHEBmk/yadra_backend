@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from enum import Flag
 from flask import Blueprint, request, jsonify
-from routes.companies import get_branches
+from routes.companies import get_branches, get_review_user_information
 from schemas import RegisterSchema
 from sqlalchemy import extract, func
 from models import Branch, Category, Company, Company_register, Flagged, Response, Review, User, Visit, db
@@ -915,6 +915,14 @@ def get_reviews():
     for branch in company_branches:
         reviews.extend(Review.query.filter_by(branch_id=branch.id).all())
     reviews_list = [review.to_dict() for review in reviews]
+    for review in reviews_list:
+        review["user_name"], review["user_avatar"] = get_review_user_information(review)
+        review['status']=[]
+        if review["is_anonymous"]:
+            review['user_name']='Anonymous'
+            review['user_avatar']=None
+        if len(review['responses'])>0:
+            review['status'].append('Company replied')
     return jsonify({"reviews": reviews_list}), 200
 
 @analytics_blueprint.route('/get_users', methods=['GET'])
