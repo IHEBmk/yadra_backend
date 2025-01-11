@@ -294,10 +294,12 @@ def get_num_branches():
     
     
     
-@analytics_blueprint.route('/blocks/get_num_reviews', methods=['GET'])
+@analytics_blueprint.route('/blocks/get_num_reviews', methods=['POST'])
 @jwt_required()
 def get_num_reviews():
     user_id = get_jwt_identity()
+    data = request.get_json()
+    company_id = data.get('company_id')
     user = User.query.filter_by(id=user_id).first()
 
     if not user:
@@ -305,10 +307,12 @@ def get_num_reviews():
 
     if not user.role==1:
         return jsonify({"message": "Aunothorized User"}), 404
-    
-    number_of_reviews=len(Review.query.all())
+    reviews = Review.query.filter_by(company_id=company_id).all()
+    branches = Branch.query.filter_by(company_id=company_id).all()
+    for branch in branches:
+        reviews.extend(Review.query.filter_by(branch_id=branch.id).all())
     return jsonify({"message": "succesfully calculated ",
-                    "number of reviews":number_of_reviews}), 200
+                    "number of reviews":len(reviews)}), 200
     
 
 

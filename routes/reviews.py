@@ -88,7 +88,13 @@ def flag_review():
         
         existing_flag = Flagged.query.filter_by(review_id=review_id, user_id=current_user_id).first()
         if existing_flag:
-            return jsonify({"message": "You have already flagged this review."}), 400
+
+            db.session.delete(existing_flag)
+            db.session.commit()
+            return jsonify({
+                "message": "Flag removed successfully",
+                "review_id": review_id
+            }), 200
 
         flagged = Flagged(
             review_id=review_id,
@@ -187,7 +193,6 @@ def like_review():
 
     existing_like = Likes.query.filter_by(review_id=review_id, user_id=user_id).first()
     if existing_like:
-        print("existing like")
         db.session.delete(existing_like)
         db.session.commit()
         return jsonify({
