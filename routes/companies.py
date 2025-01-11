@@ -425,9 +425,10 @@ def edit_company():
                         "id": company.id,
                         "name": company.name,
                         "email": company.email,
-                        "phone": company.phone
+                        "phone": company.phone,
+                        "logo": company.logo
                     }
-                }), 200,
+                }),200,
             else:
                 if not company:
                     return jsonify({
