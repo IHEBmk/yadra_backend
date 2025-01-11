@@ -921,8 +921,6 @@ def get_reviews():
         if review["is_anonymous"]:
             review['user_name']='Anonymous'
             review['user_avatar']=None
-        if len(review['responses'])>0:
-            review['status'].append('Company replied')
     return jsonify({"reviews": reviews_list}), 200
 
 @analytics_blueprint.route('/get_users', methods=['GET'])
