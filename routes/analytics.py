@@ -3,7 +3,7 @@ from enum import Flag
 from flask import Blueprint, request, jsonify
 from schemas import RegisterSchema
 from sqlalchemy import extract, func
-from models import Branch, Category, Company, Company_register, Flagged, Response, Review, User, db
+from models import Branch, Category, Company, Company_register, Flagged, Response, Review, User, Visit, db
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import  get_jwt_identity, jwt_required
 from marshmallow.exceptions import ValidationError
@@ -254,12 +254,11 @@ def churn_rate():
         return jsonify({"message": "User not found"}), 404
 
     if not user.role==1:
-        return jsonify({"message": "Aunothorized User"}), 404
+        return jsonify({"message": "Unauthorized User"}), 404
     
     users=User.query.filter_by(state=0)
     churn_rate=0
     today=datetime.now()
-    print (today)
     for user in users:
         last_login=datetime.strptime(user.last_login,'%Y-%m-%d %H:%M:%S.%f')
         if today - last_login > timedelta(days=31):
@@ -310,10 +309,10 @@ def get_num_reviews():
     return jsonify({"message": "succesfully calculated ",
                     "number of reviews":number_of_reviews}), 200
     
+
+
     
-    
-    
-    
+
     
 @analytics_blueprint.route('/blocks/get_average_rating', methods=['GET'])
 @jwt_required()
@@ -735,3 +734,121 @@ def get_number_of_companies():
     number_of_companies=len(companies)
     return jsonify({"message": "succesfully calculated ",
                     "number of companies":number_of_companies}), 200
+
+@analytics_blueprint.route('increment_visit_count', methods=['POST'])
+@jwt_required()
+def increment_visit_count():
+    Visit.increment_visit_count()
+    return jsonify({"message": "visit count incremented"}), 200
+
+
+@analytics_blueprint.route('/charts/visits_over_time', methods=['POST'])
+@jwt_required()
+def get_visits_over_time():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Request body is required"}), 400
+
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    group_by = data.get('group_by', 'day') 
+
+    if not start_date or not end_date:
+        return jsonify({"message": "start_date and end_date are required"}), 400
+
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"message": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    if group_by not in ['day', 'month', 'year']:
+        return jsonify({"message": "Invalid group_by value. Use 'day', 'month', or 'year'"}), 400
+
+    if group_by == 'day':
+        time_format = func.date(Visit.interval_start)
+        format_str = '%Y-%m-%d'
+    elif group_by == 'month':
+        time_format = func.date_format(Visit.interval_start, '%Y-%m')  
+        format_str = '%Y-%m'
+    elif group_by == 'year':
+        time_format = func.year(Visit.interval_start)  
+        format_str = '%Y'
+
+    results = db.session.query(
+        time_format.label('time_period'),
+        func.sum(Visit.visit_count).label('visit_count')
+    ).filter(
+        func.date(Visit.interval_start) >= start_date,
+        func.date(Visit.interval_start) <= end_date
+    ).group_by(time_format).order_by(time_format).all()
+
+    data = [
+        {
+            "time_period": row.time_period.strftime(format_str) if isinstance(row.time_period, datetime) else row.time_period,
+            "visit_count": row.visit_count
+        }
+        for row in results
+    ]
+
+    return jsonify(data), 200
+
+
+@analytics_blueprint.route('/charts/companies_over_time', methods=['POST'])
+@jwt_required()
+def get_companies_over_time():
+    user_id = get_jwt_identity()
+    if User.query.filter_by(id=user_id).first().role != 1:
+        return jsonify({"message": "Admin role required"}), 403
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Request body is required"}), 400
+
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    group_by = data.get('group_by', 'day') 
+
+    if not start_date or not end_date:
+        return jsonify({"message": "start_date and end_date are required"}), 400
+
+    try:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"message": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    if group_by not in ['day', 'month', 'year']:
+        return jsonify({"message": "Invalid group_by value. Use 'day', 'month', or 'year'"}), 400
+
+    if group_by == 'day':
+        time_format = func.date(Company.created_at) 
+        format_str = '%Y-%m-%d'
+    elif group_by == 'month':
+        time_format = func.date_format(Company.created_at, '%Y-%m')
+        format_str = '%Y-%m'
+    elif group_by == 'year':
+        time_format = func.year(Company.created_at) 
+        format_str = '%Y'
+
+    results = db.session.query(
+        time_format.label('time_period'),
+        func.count(Company.id).label('company_count')
+    ).filter(
+        func.date(Company.created_at) >= start_date,
+        func.date(Company.created_at) <= end_date
+    ).group_by(time_format).order_by(time_format).all()
+
+    data = [
+        {
+            "time_period": row.time_period.strftime(format_str) if isinstance(row.time_period, datetime) else row.time_period,
+            "company_count": row.company_count
+        }
+        for row in results
+    ]
+
+    return jsonify(data), 200

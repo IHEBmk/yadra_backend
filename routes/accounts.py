@@ -358,8 +358,6 @@ def register():
 @jwt_required()
 def get_user_name__avatar():
     user_id = get_jwt_identity()
-    print("get_name_avatar")
-    print(user_id)
     user = User.query.filter_by(id=user_id,is_hidden=False,state=0).first()
 
     if not user:

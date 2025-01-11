@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 
@@ -358,6 +358,8 @@ class Company_Users_visits(db.Model):
             "user_id": self.user_id,
             "guest_id": self.guest_id
         }
+
+
     
 class authToken(db.Model):
     __tablename__ = 'authToken'
@@ -377,3 +379,39 @@ class authToken(db.Model):
             "expires_at": self.expires_at,
             "is_revoked": self.is_revoked
         }
+    
+class OTP(db.Model):
+    tablename = 'otp'
+    id = db.Column(db.String(130), primary_key=True, default=lambda: str(uuid.uuid4()))
+    otp= db.Column(db.String(120))
+    def to_dict(self):
+        """Converts the model's attributes to a dictionary."""
+        return {
+            "id": self.id,
+            "otp": self.otp
+        }
+
+class Visit(db.Model):
+    __tablename__ = 'visits'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    interval_start = db.Column(db.DateTime, nullable=False)
+    interval_end = db.Column(db.DateTime, nullable=False)
+    visit_count = db.Column(db.Integer, nullable=False, default=0)
+
+    def increment_visit_count():
+        now = datetime.now()
+
+        interval_start = now.replace(minute=0, second=0, microsecond=0)
+        interval_start -= timedelta(hours=now.hour % 4) 
+        interval_end = interval_start + timedelta(hours=4)
+
+        visit = Visit.query.filter_by(interval_start=interval_start, interval_end=interval_end).first()
+
+        if visit:
+            visit.visit_count += 1
+        else:
+            visit = Visit(interval_start=interval_start, interval_end=interval_end, visit_count=1)
+            db.session.add(visit)
+
+        db.session.commit()
