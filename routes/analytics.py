@@ -554,16 +554,18 @@ def get_users_over_time():
 @jwt_required()
 def get_review_count():
     user_id = get_jwt_identity()
-    if User.query.filter_by(id=user_id).first().role != 1:
-        return jsonify({"message": "Admin role required"}), 403
-
     data = request.get_json()
+    user = User.query.filter_by(id=user_id).first()
     if not data:
         return jsonify({"message": "Request body is required"}), 400
+    company_id = data.get('company_id')
+    if  user.role != 1 and (user.role !=3 or user.company_id != company_id):
+        return jsonify({"message": "Admin or company moderator role required"}), 
+
+    
 
     start_date = data.get('start_date')
     end_date = data.get('end_date')
-    company_id = data.get('company_id')
     group_by = data.get('group_by', 'day')  
 
     if not start_date or not end_date:
@@ -910,10 +912,12 @@ def get_visits_heatmap():
 @jwt_required()
 def get_reviews():
     user_id = get_jwt_identity()
-    if User.query.filter_by(id=user_id).first().role != 1:
-        return jsonify({"message": "Admin role required"}), 403
     data = request.get_json()
     company_id = data.get('company_id')
+    user = User.query.filter_by(id=user_id).first()
+    if  user.role != 1 and (user.role !=3 or user.company_id != company_id):
+        return jsonify({"message": "Admin or company moderator role required"}), 403
+    
     company_branches = Branch.query.filter_by(company_id=company_id).all()
     reviews = Review.query.filter_by(company_id=company_id).all()
     for branch in company_branches:
