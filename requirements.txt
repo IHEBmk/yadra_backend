@@ -13,3 +13,4 @@ SQLAlchemy==2.0.36
 supabase==2.11.0
 urllib3==1.26.16
 waitress==3.0.2
+pymysql==1.0.2  # Add this line to your requirements.txt file
