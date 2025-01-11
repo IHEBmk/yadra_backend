@@ -32,7 +32,7 @@ def add_response():
     review=Review.query.filter_by(id=review_id).first()
     branch=Branch.query.filter_by(id=review.branch_id).first()
     if user:
-        if (user.role==3 and user.company_id==branch.company_id)  or (user.role==4 and review.branch_id==user.branch_id) or (user.role==2 and user.id == review.user_id):
+        if (user.role==3 and user.company_id==branch.company_id)  or (user.role==4 and review.branch_id==user.branch_id) or(user.role==3 and review.company_id==user.company_id) or (user.role==2 and user.id == review.user_id):
             response=models.Response(review_id=review_id,description=description,user_id=account_id,created_at=datetime.now())
             db.session.add(response)
             db.session.commit()
