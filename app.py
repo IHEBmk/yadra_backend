@@ -4,7 +4,6 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from models import  db
 from routes.auth import auth_blueprint
-from supabase import create_client, Client
 
 
 from routes.companies import companies_blueprint
@@ -14,10 +13,22 @@ from routes.response import response_blueprint
 from routes.analytics import analytics_blueprint
 from routes.accounts import add_blueprint, edit_blueprint, user_blueprint
 from waitress import serve
+from flask_mail import Mail
+
+
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
 app.config['DEBUG'] = True
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Use your SMTP server
+app.config['MAIL_PORT'] = 587  # Use the correct port
+app.config['MAIL_USE_TLS'] = True  # Use TLS encryption
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'mekidecheiheb900@gmail.com'  # Your email
+app.config['MAIL_PASSWORD'] = 'azdm xlzf ddgl vcch'  # Your email password
+app.config['MAIL_DEFAULT_SENDER'] = 'mekidecheiheb900@gmail.com'  # Default sender email
+
+mail = Mail(app)
 db.init_app(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)

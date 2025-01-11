@@ -613,7 +613,7 @@ def nb_reviews_per_company():
         nb_reviews_per_company[company.id] = db.session.query(func.count(Review.id)).filter(Review.company_id == company.id).scalar() + get_branches(company)[1]
     sorted_reviews = sorted(nb_reviews_per_company.items(), key=lambda item: item[1], reverse=True)
 
-    return jsonify([{"company" :company_id, "number_of_reviews": nb_reviews_per_company[company_id]} for company_id, _ in sorted_reviews[:5]]),200
+    return jsonify([{"company" :Company.query.filter_by(id = company_id).first().name, "number_of_reviews": nb_reviews_per_company[company_id]} for company_id, _ in sorted_reviews[:5]]),200
 
 
 

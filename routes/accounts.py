@@ -12,7 +12,7 @@ add_blueprint = Blueprint('add', __name__)
 bcrypt = Bcrypt()
 
 @add_blueprint.route('/company', methods=['POST'])
-@jwt_required
+@jwt_required()
 def add_company_account():
     data = request.get_json()
     account_id=get_jwt_identity()
@@ -234,6 +234,8 @@ def edit_account():
             if data.get('name'):
                 user.name= data.get('name')
             if data.get('password'):
+                print(data.get('current_password'))
+                print(data.get('password'))
                 current_password = data.get('current_password')
                 if bcrypt.check_password_hash(user.password, current_password):
                     user.password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
