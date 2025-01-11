@@ -1,8 +1,9 @@
-from flask import Flask
+import random
+from flask import Flask, jsonify, request
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-from models import  db
+from models import  OTP, db
 from routes.auth import auth_blueprint
 
 
@@ -13,7 +14,7 @@ from routes.response import response_blueprint
 from routes.analytics import analytics_blueprint
 from routes.accounts import add_blueprint, edit_blueprint, user_blueprint
 from waitress import serve
-from flask_mail import Mail
+from flask_mail import Mail, Message
 
 
 
@@ -45,7 +46,35 @@ app.register_blueprint(response_blueprint, url_prefix='/api/response')
 app.register_blueprint(add_blueprint, url_prefix='/api/add')
 app.register_blueprint(edit_blueprint, url_prefix='/api/edit')
 
+@app.route('/send-otp_email', methods=['POST'])
+def send_confirmation_code():
+    data = request.get_json()
 
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    # Generate a 6-digit confirmation code
+    confirmation_code = str(random.randint(100000, 999999))
+
+    # Create the email content
+    msg = Message('Your Confirmation Code', recipients=[email])
+    msg.body = f"Your confirmation code is: {confirmation_code}"
+
+    try:
+        # Send the email
+        new_otp=OTP(otp=confirmation_code,email=email)
+        db.session.add(new_otp)
+        db.session.commit()
+        mail.send(msg)
+        # Store the code in the session or database to verify later (this is just an example)
+        # Example: store the code in some temporary storage like a session or DB
+        # session['confirmation_code'] = confirmation_code
+
+        return jsonify({"message": "Confirmation code sent successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/")
 def home():

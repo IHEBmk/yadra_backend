@@ -59,7 +59,7 @@ def register():
         avatar = data.get('avatar'),
         created_at = datetime.now(),
         last_login = datetime.now(),
-        state = 0
+        state = 1
     )
     db.session.add(user)
     db.session.commit()
@@ -92,7 +92,7 @@ def register_user():
         avatar = data.get('avatar'),
         created_at = datetime.now(),
         last_login = datetime.now(),
-        state = 0
+        state = 1
     )
     db.session.add(user)
     db.session.commit()
@@ -282,4 +282,34 @@ def Delete():
         db.session.commit()
         return jsonify({"msg": "user is hidden"}), 200
     return jsonify({"msg": "user not found"}), 404
+
+@auth_blueprint.route('/verify-otp_email', methods=['GET'])
+def verify_otp_email():
+    data = request.args
+    otp = data.get('acess_token')
+
+    if  not otp:
+        return jsonify({
+            "msg":data,
+            "error": "Phone number and OTP are required"}), 400
+
+    try:
+        otp=OTP.query.filter_by(otp=otp).first()
+        if not otp:
+            return jsonify({"error": "OTP not found"}), 404
+        
+        user=User.query.filter_by(email=otp.email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        user.state=0
+        db.session.commit()
+
+        token=create_access_token(identity=user.id)
+        return jsonify({"message": "OTP verified successfully",
+                       'token': token,
+                       'user':user.to_dict()
+                           }), 200
+        
     
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
