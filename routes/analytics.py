@@ -559,7 +559,7 @@ def get_review_count():
 
     start_date = data.get('start_date')
     end_date = data.get('end_date')
-    branch_id = data.get('branch_id')
+    company_id = data.get('company_id')
     group_by = data.get('group_by', 'day')  
 
     if not start_date or not end_date:
@@ -580,15 +580,19 @@ def get_review_count():
         time_format = func.date_format(Review.created_at, '%Y-%m')  
     elif group_by == 'year':
         time_format = func.year(Review.created_at)
+    
+    branches = Branch.query.filter_by(company_id = company_id, is_hidden = False).all()
+    branch_ids = [branch.id for branch in branches]
 
     reviews = db.session.query(
         time_format.label('time_period'),
         func.count(Review.id).label('review_count')
     ).filter(
-        Review.branch_id == branch_id,
+        (Review.company_id == company_id) | Review.branch_id.in_(branch_ids),
         func.date(Review.created_at) >= start_date,
         func.date(Review.created_at) <= end_date
     ).group_by(time_format).order_by(time_format).all()
+    
     
 
     response = [
