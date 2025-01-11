@@ -362,7 +362,8 @@ def edit_company():
         data = request.form.to_dict()
         account_id=get_jwt_identity()
         company_id=data.get('company_id')
-        company=Company.query.filter_by(id=company_id,is_hidden=False).first()
+        print(data)
+        company=Company.query.filter_by(id=company_id,is_hidden=0).first()
         user=User.query.filter_by(id=account_id,is_hidden=False,state=0).first()
         if user:
             if ((user.role==3 and company.id==user.company_id) or user.role==1) and company :
@@ -424,10 +425,9 @@ def edit_company():
                         "id": company.id,
                         "name": company.name,
                         "email": company.email,
-                        "phone": company.phone,
-                        "logo": public_url
+                        "phone": company.phone
                     }
-                }),
+                }), 200,
             else:
                 if not company:
                     return jsonify({
@@ -443,7 +443,7 @@ def edit_company():
                     else:
                     
                         return jsonify({
-            "msg":'unothorised user',
+            "msg":'unauthorised user',
 
         }), 404
         else:
