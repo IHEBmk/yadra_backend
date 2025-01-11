@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from config import supabase
 from schemas import RegisterSchema
-from models import  User, authToken, db
+from models import  OTP, User, authToken, db
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from marshmallow.exceptions import ValidationError
