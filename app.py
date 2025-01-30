@@ -8,6 +8,9 @@ from flask_migrate import Migrate
 import requests
 from models import  OTP, db
 from routes.auth import auth_blueprint
+import numpy as np
+import pandas as pd
+from sklearn.metrics import euclidean_distances
 
 from supabase import create_client, Client
 TEST_IP = "8.8.8.8"  
@@ -149,13 +152,13 @@ def get_location():
         }), 500
 @app.route('/api/get_recomendation' , methods=['POST'])
 def Get_recomendations():
-    data=request.form
+    data=request.get_json()
     speciality=data['speciality']
     moyenne=calculate_moyenne(speciality,data)
     if speciality=='' or speciality==None or speciality=='N00':
         return jsonify({'error':'Please enter a speciality'})
     cluster=Find_cluster(speciality,data)
-    Recomendations=Recomendations(speciality,moyenne,cluster)
+    Recomendations=GRecomendations(speciality,moyenne,cluster)
     return jsonify({'Recomendations':Recomendations})
         
         
@@ -262,7 +265,7 @@ def Find_cluster(speciality,data):
     
     
     
-def Recomendations(speciality,moyenne,cluster):
+def GRecomendations(speciality,moyenne,cluster):
     Recomendations=[]
     try:
             with open("specialities__univ_map.json", "r") as json_file:
